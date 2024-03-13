@@ -1,0 +1,240 @@
+# Lexilab
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLab</title>
+    <style>
+        body {
+            text-align: center;
+            background-color: #10ec73;
+            padding: 10px;
+        }
+
+        input {
+            height: 40px;
+            font-size: 20px;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        .yazi {
+            font-size: 30px;
+        }
+
+        h1 {
+            color: #000000;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #000000;
+            color: #0dc084;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0dc084;
+            color: #000000;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .kutu {
+            border: 3px solid #000000;
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #000000;
+            width: 90%;
+            font-size: 20px;
+        }
+
+        .close {
+            color: #000000;
+            float: right;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+     
+    </style>
+</head>
+
+<body>
+    <div id="welcomeScreen">
+        <h1>LexiLab</h1>
+        <p>Kelime dağarcığınızı labatuvarımızda geliştirin</p>
+        <button onclick="startApp()">Başla</button>
+      
+    </div>
+
+    <div id="appScreen" style="display:none;">
+        <h1>LexiLab</h1>
+        <div class="kutu">
+            <div class="yazi" id="wordDisplay"></div>
+            <br>
+            <input class="cevap-kutusu" type="text" id="answerInput" placeholder="Cevabınızı buraya yazınız">
+            <br>
+            <button onclick="checkAnswer()">Cevabı Kontrol Et</button>
+            <div id="result"></div>
+        </div>
+
+        <!-- Ekle ve Kelime Listesi Butonları -->
+        <button id="addWordButton" onclick="openAddWordForm()">+</button>
+        <button id="showWordsButton" onclick="showWordsModal()">K</button>
+
+        <!-- Modal -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Tüm Kelimeler</h2>
+                <ul id="wordList"></ul>
+            </div>
+        </div>
+
+        <!-- Kelime Ekle Formu -->
+        <div id="addWordForm" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAddWordForm()">&times;</span>
+                <h2>Yeni Kelime Ekle</h2>
+                <input type="text" id="newEnglishWord" placeholder="İngilizce Kelime">
+                <input type="text" id="newTurkishWord" placeholder="Türkçe Karşılığı">
+                <button onclick="addWord()">Ekle</button>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script>
+function startApp() {
+    document.getElementById('welcomeScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    openAddWordForm(); // Ekleme formunu aç
+    displayWord(); // Uygulama başladığında ilk kelimeyi göstermek için
+    closeAddWordForm(); // Kelime ekleme formunu kapat
+    closeModal(); // Modalı kapat
+}
+
+var words = [
+    { english: "Hello", turkish: "merhaba", asked: false },
+    ];
+
+var currentIndex = 0;
+
+function displayWord() {
+    // Eğer kullanıcı tüm kelimeleri eklemişse, rastgele bir kelime seçip göster
+    if (words.length === 0) {
+        document.getElementById('wordDisplay').innerHTML = "Tebrikler, tüm kelimeleri öğrendiniz!";
+        return;
+    }
+
+    // Rastgele olmayan bir şekilde kullanıcının eklememiş olduğu kelimeleri sormak için bir döngü kullan
+    var start = Math.floor(Math.random() * words.length);
+    for (var i = start; i < start + words.length; i++) {
+        var index = i % words.length;
+        if (!words[index].asked) {
+            document.getElementById('wordDisplay').innerHTML = words[index].english;
+            currentIndex = index;
+            words[index].asked = true;
+            return;
+        }
+    }
+}
+
+function checkAnswer() {
+    var userAnswer = document.getElementById('answerInput').value.trim().toLowerCase();
+    var correctAnswer = words[currentIndex].turkish.toLowerCase();
+    var resultDiv = document.getElementById('result');
+
+    if (userAnswer === correctAnswer) {
+        resultDiv.innerHTML = "Tebrikler, doğru cevap!";
+        resultDiv.style.color = "green";
+    } else {
+        resultDiv.innerHTML = "Üzgünüm, doğru cevap: " + correctAnswer;
+        resultDiv.style.color = "red";
+    }
+
+    // Bir sonraki kelimeye geç
+    displayWord();
+    // Cevap alanını temizle
+    document.getElementById('answerInput').value = "";
+}
+
+function openAddWordForm() {
+    document.getElementById("addWordForm").style.display = "block";
+}
+
+function closeAddWordForm() {
+    document.getElementById("addWordForm").style.display = "none";
+}
+
+function addWord() {
+    var newEnglishWord = document.getElementById("newEnglishWord").value.trim();
+    var newTurkishWord = document.getElementById("newTurkishWord").value.trim();
+
+    if (newEnglishWord && newTurkishWord) {
+        words.push({ english: newEnglishWord, turkish: newTurkishWord, asked: false });
+        alert("Kelime eklendi: " + newEnglishWord);
+        // Yeni kelimeyi ekleme işleminden sonra doğrudan kullanıcıya yeni kelimeyi soralım
+        displayWord();
+        closeAddWordForm();
+    } else {
+        alert("Lütfen geçerli bir kelime ekleyin.");
+    }
+}
+
+function showWordsModal() {
+    var wordList = document.getElementById('wordList');
+    wordList.innerHTML = '';
+    words.forEach(function(item, index) {
+        var li = document.createElement('li');
+        li.textContent = item.english + ' - ' + item.turkish;
+        var removeButton = document.createElement('button');
+        removeButton.textContent = "x";
+        removeButton.onclick = function() {
+            removeWord(index);
+        };
+        li.appendChild(removeButton);
+        wordList.appendChild(li);
+    });
+    var modal = document.getElementById("myModal");
+    modal.style.display = "block";
+}
+
+function removeWord(index) {
+    words.splice(index, 1);
+    displayWord(); // Kelimeyi kaldırdıktan sonra bir sonraki kelimeyi göstermek için
+    closeModal(); // Modalı kapatmak için
+}
+
+function closeModal() {
+    var modal = document.getElementById("myModal");
+    modal.style.display = "none";
+}
+
+// İlk kelimeyi göster
+displayWord();
+    </script>
+</body>
+
+</html>
+
